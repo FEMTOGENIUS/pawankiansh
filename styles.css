@@ -1038,6 +1038,49 @@ footer { text-align: center; margin-top: 64px; }
   background: #fff;
 }
 
+/* ---- Event-card "view invitation" button (used by cards with a photo, e.g. Reception) ---- */
+.event-photo-btn {
+  margin-top: 14px;
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--serif-display);
+  font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--maroon);
+  background: rgba(109,26,51,.07);
+  border: 1px solid rgba(109,26,51,.3);
+  border-radius: 30px;
+  padding: 9px 16px;
+  cursor: pointer;
+}
+.event-photo-btn:active { background: rgba(109,26,51,.14); }
+
+/* ---- Full-screen photo lightbox with a back button ---- */
+#photo-modal {
+  position: fixed; inset: 0; z-index: 95;
+  background: rgba(15,4,8,.94);
+  display: grid; place-items: center;
+  padding: calc(env(safe-area-inset-top, 0px) + 64px) 16px calc(env(safe-area-inset-bottom, 0px) + 20px);
+}
+#photo-modal.hidden { display: none; }
+#photo-modal-close {
+  position: fixed; top: calc(env(safe-area-inset-top, 0px) + 16px); left: 16px; z-index: 96;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--serif-display);
+  font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase;
+  color: #fff8ec;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 30px;
+  padding: 9px 16px 9px 12px;
+}
+.photo-modal-frame {
+  width: 100%; max-width: 480px; max-height: 100%;
+  overflow-y: auto;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+.photo-modal-frame img { width: 100%; display: block; }
+body.modal-open { overflow: hidden; }
+
 /* Native royal RSVP form (used until a real Google Form URL is configured) */
 #rsvp-form { display: grid; gap: 16px; padding: 4px 4px 2px; }
 .rf-label {

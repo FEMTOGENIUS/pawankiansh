@@ -62,8 +62,7 @@ window.addEventListener("orientationchange", () => {
 /* ═══════════════ AUDIO — synthesized temple sounds ═══════ */
 const audio = (() => {
   let ctx = null, master = null, bgm = null, noiseBuf = null;
-  let muted = false;
-  try { muted = localStorage.getItem("wed-muted") === "1"; } catch {}
+  let muted = false; // sound is on by default on every visit — not remembered across sessions
   let bgmFadeToken = 0;
 
   const init = () => {
@@ -719,9 +718,33 @@ const petals = (() => {
       <span class="event-ico">${ICONS[ev.icon] || ICONS.wedding}</span>
       <h3 class="event-name">${ev.name}</h3>
       <p class="event-line">${ev.line}</p>
-      <p class="event-meta"><b>${ev.date}</b><br>${ev.time}<br>${ev.venue}</p>`;
+      <p class="event-meta"><b>${ev.date}</b><br>${ev.time}<br>${ev.venue}</p>
+      ${ev.photo ? `<button type="button" class="event-photo-btn" data-photo="${ev.photo}" data-label="${ev.name}">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 15l-5-5-9 9"/></svg>
+        View invitation
+      </button>` : ""}`;
     wrap.appendChild(card);
   });
+
+  const photoModal = $("#photo-modal"), photoModalImg = $("#photo-modal-img"), photoModalClose = $("#photo-modal-close");
+  if (photoModal && photoModalImg) {
+    wrap.addEventListener("click", (e) => {
+      const btn = e.target.closest(".event-photo-btn");
+      if (!btn) return;
+      photoModalImg.src = btn.dataset.photo;
+      photoModalImg.alt = btn.dataset.label + " invitation";
+      photoModal.classList.remove("hidden");
+      photoModal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+    });
+    const closePhotoModal = () => {
+      photoModal.classList.add("hidden");
+      photoModal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+    };
+    photoModalClose && photoModalClose.addEventListener("click", closePhotoModal);
+    photoModal.addEventListener("click", (e) => { if (e.target === photoModal) closePhotoModal(); });
+  }
 
   const show = (el, stagger) => setTimeout(() => {
     el.classList.add("shown");
