@@ -92,7 +92,6 @@ window.WEDDING_CONFIG = {
       venue: "Lucknow",
       line: "One more evening to celebrate, closer to home",
       accent: "#6D1A33",
-      photo: "assets/stills/reception_card.webp",
     },
   ],
 
@@ -106,7 +105,7 @@ window.WEDDING_CONFIG = {
   rsvp: {
     // Replace with the couple's real Google Form (use the /viewform link)
     formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSe_PLACEHOLDER/viewform?embedded=true",
-    deadline: "Please respond by 20 October 2026",
+    deadline: "Please respond by 30 August 2026",
   },
 
   // Scratch-card hidden message
