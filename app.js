@@ -62,7 +62,8 @@ window.addEventListener("orientationchange", () => {
 /* ═══════════════ AUDIO — synthesized temple sounds ═══════ */
 const audio = (() => {
   let ctx = null, master = null, bgm = null, noiseBuf = null;
-  let muted = false; // sound is on by default on every visit — not remembered across sessions
+  let muted = false;
+  try { muted = localStorage.getItem("wed-muted") === "1"; } catch {}
   let bgmFadeToken = 0;
 
   const init = () => {
@@ -217,13 +218,10 @@ const audio = (() => {
     else { ctx && ctx.resume(); bgm && !muted && bgm.play().catch(() => {}); }
   });
 
-  const duckBgm = (duration = 450) => fadeBgmTo(0.045, duration);
-  const unduckBgm = (duration = 650) => { if (bgm && !muted) fadeBgmTo(0.32, duration); };
-
   return {
     init, bell, chime, startBgm, whoosh, scratchNoise, toggleMute,
     fadeForWorld, pauseForWorld, restoreAfterWorld, isMuted: () => muted,
-    hasBgm: () => !!bgm, duckBgm, unduckBgm,
+    hasBgm: () => !!bgm,
   };
 })();
 
@@ -392,8 +390,8 @@ const frames = (() => {
     behind: T === "full" ? 10 : 5,
     limit: T === "full" ? 4 : 3,
   }) : null;
-  const GATE = Math.min(T === "lite" ? 24 : IS_TOUCH ? 40 : 50, N);
-  const GATE_LIMIT = T === "lite" ? 2 : 5;
+  const GATE = Math.min(T === "lite" ? 12 : IS_TOUCH ? 18 : 26, N);
+  const GATE_LIMIT = T === "lite" ? 3 : 6;
 
   /* Entry gate: robust retrying preload of the opening stretch. */
   const preloadLo = (onProgress) => new Promise((resolve, reject) => {
@@ -721,12 +719,14 @@ const petals = (() => {
       <span class="event-ico">${ICONS[ev.icon] || ICONS.wedding}</span>
       <h3 class="event-name">${ev.name}</h3>
       <p class="event-line">${ev.line}</p>
-      <p class="event-meta"><b>${ev.date}</b><br>${ev.time}<br>${ev.venue}</p>`;
+      <p class="event-meta"><b>${ev.date}</b> · ${ev.time}<br>${ev.venue}</p>`;
     wrap.appendChild(card);
   });
 
+  let chimed = 0;
   const show = (el, stagger) => setTimeout(() => {
     el.classList.add("shown");
+    if (chimed++ < 4) audio.chime();
   }, 120 * stagger);
   if ("IntersectionObserver" in window) {
     const io = new IntersectionObserver((entries) => {
@@ -1368,38 +1368,6 @@ const films = (() => {
   });
   addEventListener("pagehide", pauseAll);
   return { tick };
-})();
-
-/* Royal Affair film — tap-to-play (iOS Safari will not autoplay audible
-   video just because it scrolled into view, even after an earlier gesture
-   elsewhere on the page, so a direct tap on THIS element is required).
-   Duck the background score while it plays so the two scores never overlap. */
-(() => {
-  const v = $("#royal-affair-video"), btn = $("#royal-affair-play");
-  if (!v || !btn) return;
-
-  const showBtn = () => btn.classList.remove("hidden");
-  const hideBtn = () => btn.classList.add("hidden");
-
-  btn.addEventListener("click", () => {
-    v.muted = false;
-    const p = v.play();
-    if (p && p.catch) p.catch(() => showBtn()); // if it still fails, keep the button visible
-  });
-
-  v.addEventListener("play", () => { hideBtn(); audio.duckBgm(); });
-  v.addEventListener("pause", () => { showBtn(); audio.unduckBgm(); });
-  v.addEventListener("ended", () => { showBtn(); audio.unduckBgm(); });
-
-  // Pausing on scroll-away is allowed everywhere (only starting audible
-  // playback is restricted), so this part is safe to do automatically.
-  if ("IntersectionObserver" in window) {
-    new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting && !v.paused) v.pause();
-      });
-    }, { threshold: 0.15 }).observe(v);
-  }
 })();
 
 /* ═══════════════ SOUND TOGGLE ════════════════════════════ */
