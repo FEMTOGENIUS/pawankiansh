@@ -1370,15 +1370,36 @@ const films = (() => {
   return { tick };
 })();
 
-/* Royal Affair film carries its own sound — duck the background score
-   while it plays so the two scores never overlap, and bring the bgm
-   back once the clip pauses, ends, or scrolls out of view. */
+/* Royal Affair film — tap-to-play (iOS Safari will not autoplay audible
+   video just because it scrolled into view, even after an earlier gesture
+   elsewhere on the page, so a direct tap on THIS element is required).
+   Duck the background score while it plays so the two scores never overlap. */
 (() => {
-  const v = $("#royal-affair-video");
-  if (!v) return;
-  v.addEventListener("play", () => audio.duckBgm());
-  v.addEventListener("pause", () => audio.unduckBgm());
-  v.addEventListener("ended", () => audio.unduckBgm());
+  const v = $("#royal-affair-video"), btn = $("#royal-affair-play");
+  if (!v || !btn) return;
+
+  const showBtn = () => btn.classList.remove("hidden");
+  const hideBtn = () => btn.classList.add("hidden");
+
+  btn.addEventListener("click", () => {
+    v.muted = false;
+    const p = v.play();
+    if (p && p.catch) p.catch(() => showBtn()); // if it still fails, keep the button visible
+  });
+
+  v.addEventListener("play", () => { hideBtn(); audio.duckBgm(); });
+  v.addEventListener("pause", () => { showBtn(); audio.unduckBgm(); });
+  v.addEventListener("ended", () => { showBtn(); audio.unduckBgm(); });
+
+  // Pausing on scroll-away is allowed everywhere (only starting audible
+  // playback is restricted), so this part is safe to do automatically.
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting && !v.paused) v.pause();
+      });
+    }, { threshold: 0.15 }).observe(v);
+  }
 })();
 
 /* ═══════════════ SOUND TOGGLE ════════════════════════════ */
